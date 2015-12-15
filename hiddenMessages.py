@@ -23,6 +23,28 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def min_skew(self, genome):
+        min_skew_value = 0
+        min_skew_i = []
+        skew_array = [0]
+
+        for i in xrange(len(genome)):
+            base = genome[i]
+            if base == 'C':
+                skew_array.append(skew_array[-1] - 1)
+            elif base == 'G':
+                skew_array.append(skew_array[-1] + 1)
+            else:
+                skew_array.append(skew_array[-1])
+
+            if skew_array[-1] < min_skew_value:
+                min_skew_value = skew_array[-1]
+                min_skew_i = [i + 1]
+            elif skew_array[-1] == min_skew_value:
+                min_skew_i.append(i + 1)
+
+        return min_skew_i 
+
     def skew_genome(self, genome):
         skew_array = [0]
 
@@ -222,9 +244,10 @@ if __name__ == "__main__":
     parser.add_argument('--clump_finder', help='Find patterns forming clumps in a string')
     parser.add_argument('--clump_finder2', help='Find patterns forming clumps in a string using freq array')
     parser.add_argument('--computing_frequencies', help='Generate frequency array')
-    parser.add_argument('--skew_genome', help='Get skew diagram of genome')
     parser.add_argument('--pattern_to_number2', help='Pattern to number algorithm')
     parser.add_argument('--number_to_pattern', help='My number to pattern algorithm')
+    parser.add_argument('--skew_genome', help='Get skew diagram of genome')
+    parser.add_argument('--min_skew', help='Find a position in a genome where the skew diagram attains a minimum')
     args = parser.parse_args()
 
      
@@ -267,10 +290,6 @@ if __name__ == "__main__":
         with open(args.computing_frequencies) as f:
             lines = f.readlines()
         print ' '.join([str(i) for i in hm.computing_frequencies(lines[0].strip(), int(lines[1].strip()))])
-    elif args.skew_genome:
-        with open(args.skew_genome) as f:
-            lines = f.readlines()
-        print hm.skew_genome(lines[0].strip())
     elif args.pattern_to_number2:
         with open(args.pattern_to_number2) as f:
             lines = f.readlines()
@@ -279,8 +298,17 @@ if __name__ == "__main__":
         with open(args.number_to_pattern) as f:
             lines = f.readlines()
         print hm.number_to_pattern(int(lines[0].strip()), int(lines[1].strip()))
+    elif args.skew_genome:
+        with open(args.skew_genome) as f:
+            lines = f.readlines()
+        print hm.skew_genome(lines[0].strip())
+    elif args.min_skew:
+        with open(args.min_skew) as f:
+            lines = f.readlines()
+        print ' '.join([str(i) for i in hm.min_skew(lines[0].strip())])
 
     # Test calls
+    #print hm.min_skew('TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT')
     #print hm.skew_genome('CATGGGCATCGGCCATACGCC')
     #print hm.pattern_to_number2('ATGCAA')
     #print hm.computing_frequencies('ACGCGGCTCTGAAA', 2)
