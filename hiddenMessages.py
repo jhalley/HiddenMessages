@@ -23,6 +23,14 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def hamming_distance(self, p, q):
+        hamming_distance = 0
+        for i in xrange(len(p)):
+            if p[i] != q[i]:
+                hamming_distance += 1
+
+        return hamming_distance
+
     def min_skew(self, genome):
         min_skew_value = 0
         min_skew_i = []
@@ -248,6 +256,7 @@ if __name__ == "__main__":
     parser.add_argument('--number_to_pattern', help='My number to pattern algorithm')
     parser.add_argument('--skew_genome', help='Get skew diagram of genome')
     parser.add_argument('--min_skew', help='Find a position in a genome where the skew diagram attains a minimum')
+    parser.add_argument('--hamming_distance', help='Calculate hamming distance between two strings of equal length')
     args = parser.parse_args()
 
      
@@ -306,8 +315,13 @@ if __name__ == "__main__":
         with open(args.min_skew) as f:
             lines = f.readlines()
         print ' '.join([str(i) for i in hm.min_skew(lines[0].strip())])
+    elif args.hamming_distance:
+        with open(args.hamming_distance) as f:
+            lines = f.readlines()
+        print hm.hamming_distance(lines[0].strip(), lines[1].strip())
 
     # Test calls
+    #print hm.hamming_distance('CGAAT', 'CGGAC')
     #print hm.min_skew('TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT')
     #print hm.skew_genome('CATGGGCATCGGCCATACGCC')
     #print hm.pattern_to_number2('ATGCAA')
