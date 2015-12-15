@@ -23,6 +23,19 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def skew_genome(self, genome):
+        skew_array = [0]
+
+        for base in genome:
+            if base == 'C':
+                skew_array.append(skew_array[-1] - 1)
+            elif base == 'G':
+                skew_array.append(skew_array[-1] + 1)
+            else:
+                skew_array.append(skew_array[-1])
+
+        return skew_array
+
     def computing_frequencies(self, text, k):
         freq = [0] * (4**k)
         for i in xrange(len(text) - k + 1):
@@ -201,6 +214,7 @@ if __name__ == "__main__":
     parser.add_argument('--clump_finder', help='Find patterns forming clumps in a string')
     parser.add_argument('--clump_finder2', help='Find patterns forming clumps in a string using freq array')
     parser.add_argument('--computing_frequencies', help='Generate frequency array')
+    parser.add_argument('--skew_genome', help='Get skew diagram of genome')
     args = parser.parse_args()
 
      
@@ -243,8 +257,13 @@ if __name__ == "__main__":
         with open(args.computing_frequencies) as f:
             lines = f.readlines()
         print ' '.join([str(i) for i in hm.computing_frequencies(lines[0].strip(), int(lines[1].strip()))])
+    elif args.skew_genome:
+        with open(args.skew_genome) as f:
+            lines = f.readlines()
+        print hm.skew_genome(lines[0].strip())
 
     # Test calls
+    #print hm.skew_genome('CATGGGCATCGGCCATACGCC')
     #print hm.computing_frequencies('ACGCGGCTCTGAAA', 2)
     #print hm.number_to_pattern(5437, 7)
     #print hm.number_to_pattern(5437, 8)
