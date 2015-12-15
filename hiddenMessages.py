@@ -23,6 +23,15 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def pattern_to_number2(self, pattern):
+        if not pattern:
+            return 0
+
+        symbol = pattern[-1]
+        prefix = pattern[:-1]
+        return 4 * self.pattern_to_number2(prefix) + self.lex_order[symbol]
+            
+
     def computing_frequencies(self, text, k):
         freq = [0] * (4**k)
         for i in xrange(len(text) - k + 1):
@@ -201,6 +210,8 @@ if __name__ == "__main__":
     parser.add_argument('--clump_finder', help='Find patterns forming clumps in a string')
     parser.add_argument('--clump_finder2', help='Find patterns forming clumps in a string using freq array')
     parser.add_argument('--computing_frequencies', help='Generate frequency array')
+    parser.add_argument('--pattern_to_number2', help='Pattern to number algorithm')
+    parser.add_argument('--number_to_pattern', help='My number to pattern algorithm')
     args = parser.parse_args()
 
      
@@ -243,8 +254,17 @@ if __name__ == "__main__":
         with open(args.computing_frequencies) as f:
             lines = f.readlines()
         print ' '.join([str(i) for i in hm.computing_frequencies(lines[0].strip(), int(lines[1].strip()))])
+    elif args.pattern_to_number2:
+        with open(args.pattern_to_number2) as f:
+            lines = f.readlines()
+        print hm.pattern_to_number2(lines[0].strip())
+    elif args.number_to_pattern:
+        with open(args.number_to_pattern) as f:
+            lines = f.readlines()
+        print hm.number_to_pattern(int(lines[0].strip()), int(lines[1].strip()))
 
     # Test calls
+    #print hm.pattern_to_number2('ATGCAA')
     #print hm.computing_frequencies('ACGCGGCTCTGAAA', 2)
     #print hm.number_to_pattern(5437, 7)
     #print hm.number_to_pattern(5437, 8)
