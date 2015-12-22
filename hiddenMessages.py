@@ -23,6 +23,15 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def approx_pattern_matching(self, pattern, text, d):
+        len_pattern = len(pattern)
+        pos = []
+        for i in xrange(len(text) - len_pattern + 1):
+            if self.hamming_distance(text[i:i+len_pattern], pattern) <= d:
+                pos.append(i)
+
+        return pos
+
     def hamming_distance(self, p, q):
         hamming_distance = 0
         for i in xrange(len(p)):
@@ -257,6 +266,7 @@ if __name__ == "__main__":
     parser.add_argument('--skew_genome', help='Get skew diagram of genome')
     parser.add_argument('--min_skew', help='Find a position in a genome where the skew diagram attains a minimum')
     parser.add_argument('--hamming_distance', help='Calculate hamming distance between two strings of equal length')
+    parser.add_argument('--approx_pattern_matching', help='Find all approximate occurrences of a pattern in a string')
     args = parser.parse_args()
 
      
@@ -319,8 +329,13 @@ if __name__ == "__main__":
         with open(args.hamming_distance) as f:
             lines = f.readlines()
         print hm.hamming_distance(lines[0].strip(), lines[1].strip())
+    elif args.approx_pattern_matching:
+        with open(args.approx_pattern_matching) as f:
+            lines = f.readlines()
+        print ' '.join([str(i) for i in hm.approx_pattern_matching(lines[0].strip(), lines[1].strip(), int(lines[2].strip()))])
 
     # Test calls
+    #print hm.approx_pattern_matching('ATTCTGGA', 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT', 3)
     #print hm.hamming_distance('CGAAT', 'CGGAC')
     #print hm.min_skew('TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT')
     #print hm.skew_genome('CATGGGCATCGGCCATACGCC')
