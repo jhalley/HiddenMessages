@@ -23,6 +23,9 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def approx_pattern_count(self, pattern, text, d):
+        return len(self.approx_pattern_matching(pattern, text, d))
+
     def approx_pattern_matching(self, pattern, text, d):
         len_pattern = len(pattern)
         pos = []
@@ -267,6 +270,7 @@ if __name__ == "__main__":
     parser.add_argument('--min_skew', help='Find a position in a genome where the skew diagram attains a minimum')
     parser.add_argument('--hamming_distance', help='Calculate hamming distance between two strings of equal length')
     parser.add_argument('--approx_pattern_matching', help='Find all approximate occurrences of a pattern in a string')
+    parser.add_argument('--approx_pattern_count', help='Get count of all approximate occurrences of a pattern in a string')
     args = parser.parse_args()
 
      
@@ -333,9 +337,13 @@ if __name__ == "__main__":
         with open(args.approx_pattern_matching) as f:
             lines = f.readlines()
         print ' '.join([str(i) for i in hm.approx_pattern_matching(lines[0].strip(), lines[1].strip(), int(lines[2].strip()))])
+    elif args.approx_pattern_count:
+        with open(args.approx_pattern_count) as f:
+            lines = f.readlines()
+        print hm.approx_pattern_count(lines[0].strip(), lines[1].strip(), int(lines[2].strip()))
 
     # Test calls
-    print len(hm.approx_pattern_matching('AAAAA', 'AACAAGCTGATAAACATTTAAAGAG', 2))
+    #print len(hm.approx_pattern_matching('AAAAA', 'AACAAGCTGATAAACATTTAAAGAG', 2))
     #print hm.approx_pattern_matching('ATTCTGGA', 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT', 3)
     #print hm.hamming_distance('CGAAT', 'CGGAC')
     #print hm.min_skew('TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT')
