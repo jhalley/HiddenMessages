@@ -335,6 +335,7 @@ if __name__ == "__main__":
         print ' '.join([str(i) for i in hm.approx_pattern_matching(lines[0].strip(), lines[1].strip(), int(lines[2].strip()))])
 
     # Test calls
+    print len(hm.approx_pattern_matching('AAAAA', 'AACAAGCTGATAAACATTTAAAGAG', 2))
     #print hm.approx_pattern_matching('ATTCTGGA', 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT', 3)
     #print hm.hamming_distance('CGAAT', 'CGGAC')
     #print hm.min_skew('TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT')
