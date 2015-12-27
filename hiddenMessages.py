@@ -23,6 +23,23 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    # This is the brute force approach
+    def freq_words_w_mismatches(self, text, k , d):
+        freq = [0] * (4**k)
+
+        # Calculate freq
+        for i in xrange(4**k):
+            freq[i] = self.approx_pattern_count(self.number_to_pattern(i, k), text, d)
+
+        # Return only max words
+        maxFreq = max(freq)
+        maxWords = []
+        for i in xrange(4**k):
+            if freq[i] == maxFreq:
+                maxWords.append(self.number_to_pattern(i, k))
+
+        return maxWords
+
     def approx_pattern_count(self, pattern, text, d):
         return len(self.approx_pattern_matching(pattern, text, d))
 
@@ -100,7 +117,7 @@ class HiddenMessages:
         # 11, 2 = GT
         def recurse(num):
             if num < 4:
-                return num
+                return str(num)
             else:
                 return str(recurse(num/4)) + str(num%4)
 
@@ -271,6 +288,7 @@ if __name__ == "__main__":
     parser.add_argument('--hamming_distance', help='Calculate hamming distance between two strings of equal length')
     parser.add_argument('--approx_pattern_matching', help='Find all approximate occurrences of a pattern in a string')
     parser.add_argument('--approx_pattern_count', help='Get count of all approximate occurrences of a pattern in a string')
+    parser.add_argument('--freq_words_w_mismatches', help='Find the most frequent k-mers with mismatches in a string')
     args = parser.parse_args()
 
      
@@ -341,8 +359,13 @@ if __name__ == "__main__":
         with open(args.approx_pattern_count) as f:
             lines = f.readlines()
         print hm.approx_pattern_count(lines[0].strip(), lines[1].strip(), int(lines[2].strip()))
+    elif args.freq_words_w_mismatches:
+        with open(args.freq_words_w_mismatches) as f:
+            lines = f.readlines()
+        print ' '.join(hm.freq_words_w_mismatches(lines[0].strip(), int(lines[1].strip().split()[0]), int(lines[1].strip().split()[1])))
 
     # Test calls
+    #print hm.freq_words_w_mismatches('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
     #print len(hm.approx_pattern_matching('AAAAA', 'AACAAGCTGATAAACATTTAAAGAG', 2))
     #print hm.approx_pattern_matching('ATTCTGGA', 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT', 3)
     #print hm.hamming_distance('CGAAT', 'CGGAC')
