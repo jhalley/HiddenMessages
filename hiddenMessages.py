@@ -24,6 +24,24 @@ class HiddenMessages:
         }
 
     # This is the brute force approach
+    def freq_words_w_mismatches_and_reverse_comp(self, text, k, d):
+        freq = [0] * (4**k)
+
+        # Calculate freq
+        for i in xrange(4**k):
+            pattern = self.number_to_pattern(i, k)
+            freq[i] = self.approx_pattern_count(pattern, text, d) + self.approx_pattern_count(self.reverse_complement(pattern), text, d)
+
+        # Return only max words
+        maxFreq = max(freq)
+        maxWords = []
+        for i in xrange(4**k):
+            if freq[i] == maxFreq:
+                maxWords.append(self.number_to_pattern(i, k))
+
+        return maxWords
+
+    # This is the brute force approach
     def freq_words_w_mismatches(self, text, k , d):
         freq = [0] * (4**k)
 
@@ -289,6 +307,7 @@ if __name__ == "__main__":
     parser.add_argument('--approx_pattern_matching', help='Find all approximate occurrences of a pattern in a string')
     parser.add_argument('--approx_pattern_count', help='Get count of all approximate occurrences of a pattern in a string')
     parser.add_argument('--freq_words_w_mismatches', help='Find the most frequent k-mers with mismatches in a string')
+    parser.add_argument('--freq_words_w_mismatches_and_reverse_comp', help='Find the most frequent k-mers (with mismatches and reverse complements) in a string')
     args = parser.parse_args()
 
      
@@ -363,8 +382,13 @@ if __name__ == "__main__":
         with open(args.freq_words_w_mismatches) as f:
             lines = f.readlines()
         print ' '.join(hm.freq_words_w_mismatches(lines[0].strip(), int(lines[1].strip().split()[0]), int(lines[1].strip().split()[1])))
+    elif args.freq_words_w_mismatches_and_reverse_comp:
+        with open(args.freq_words_w_mismatches_and_reverse_comp) as f:
+            lines = f.readlines()
+        print ' '.join(hm.freq_words_w_mismatches_and_reverse_comp(lines[0].strip(), int(lines[1].strip().split()[0]), int(lines[1].strip().split()[1])))
 
     # Test calls
+    # print hm.freq_words_w_mismatches_and_reverse_comp('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
     #print hm.freq_words_w_mismatches('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
     #print len(hm.approx_pattern_matching('AAAAA', 'AACAAGCTGATAAACATTTAAAGAG', 2))
     #print hm.approx_pattern_matching('ATTCTGGA', 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT', 3)
