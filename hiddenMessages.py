@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import argparse
+import itertools
 
 class HiddenMessages:
     def __init__(self):
@@ -22,6 +23,15 @@ class HiddenMessages:
             '2': 'G',
             '3': 'T'
         }
+
+    # From: http://stackoverflow.com/a/19941659
+    def neighbors(self, word, hamming_distance, charset='ATCG'):
+        for indices in itertools.combinations(range(len(word)), hamming_distance):
+            for replacements in itertools.product(charset, repeat=hamming_distance):
+                mutation = list(word)
+                for index, replacement in zip(indices, replacements):
+                    mutation[index] = replacement
+                yield "".join(mutation)
 
     # This is the brute force approach
     def freq_words_w_mismatches_and_reverse_comp(self, text, k, d):
@@ -388,7 +398,8 @@ if __name__ == "__main__":
         print ' '.join(hm.freq_words_w_mismatches_and_reverse_comp(lines[0].strip(), int(lines[1].strip().split()[0]), int(lines[1].strip().split()[1])))
 
     # Test calls
-    # print hm.freq_words_w_mismatches_and_reverse_comp('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
+    #print [i for i in hm.neighbors('acg', 1)]
+    #print hm.freq_words_w_mismatches_and_reverse_comp('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
     #print hm.freq_words_w_mismatches('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
     #print len(hm.approx_pattern_matching('AAAAA', 'AACAAGCTGATAAACATTTAAAGAG', 2))
     #print hm.approx_pattern_matching('ATTCTGGA', 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT', 3)
