@@ -24,6 +24,26 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def motif_enumeration(self, dna_set, k, d):
+        patterns = set()
+        raw_patterns = set()
+        for dna in dna_set:
+            for raw_pattern in [dna[i:i+k] for i in range(len(dna) - k + 1)]:
+                raw_patterns.add(raw_pattern)
+
+        for pattern in raw_patterns:
+            for pattern_prime in self.neighbors(pattern, d):
+                appears = True
+                for dna in dna_set:
+                    if self.approx_pattern_count(pattern_prime, dna, d) == 0:
+                        appears = False
+                        break
+
+                if appears:
+                    patterns.add(pattern_prime)
+
+        return patterns
+
     # From: http://stackoverflow.com/a/19941659
     def neighbors(self, word, hamming_distance, charset='ATCG'):
         for indices in itertools.combinations(range(len(word)), hamming_distance):
@@ -318,6 +338,7 @@ if __name__ == "__main__":
     parser.add_argument('--approx_pattern_count', help='Get count of all approximate occurrences of a pattern in a string')
     parser.add_argument('--freq_words_w_mismatches', help='Find the most frequent k-mers with mismatches in a string')
     parser.add_argument('--freq_words_w_mismatches_and_reverse_comp', help='Find the most frequent k-mers (with mismatches and reverse complements) in a string')
+    parser.add_argument('--motif_enumeration', help='A brute force attempt at motif finding')
     args = parser.parse_args()
 
      
@@ -396,8 +417,13 @@ if __name__ == "__main__":
         with open(args.freq_words_w_mismatches_and_reverse_comp) as f:
             lines = f.readlines()
         print ' '.join(hm.freq_words_w_mismatches_and_reverse_comp(lines[0].strip(), int(lines[1].strip().split()[0]), int(lines[1].strip().split()[1])))
+    elif args.motif_enumeration:
+        with open(args.motif_enumeration) as f:
+            lines = f.readlines()
+        print ' '.join(sorted(hm.motif_enumeration([dna.strip() for dna in lines[1:]], int(lines[0].split()[0]), int(lines[0].split()[1]))))
 
     # Test calls
+    #print sorted(hm.motif_enumeration(['ATTTGGC', 'TGCCTTA', 'CGGTATC', 'GAAAATT'], 3, 1))
     #print [i for i in hm.neighbors('acg', 1)]
     #print hm.freq_words_w_mismatches_and_reverse_comp('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
     #print hm.freq_words_w_mismatches('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
