@@ -424,14 +424,15 @@ if __name__ == "__main__":
 
     # Test calls
     #print sorted(hm.motif_enumeration(['ATTTGGC', 'TGCCTTA', 'CGGTATC', 'GAAAATT'], 3, 1))
-    #print [i for i in hm.neighbors('acg', 1)]
+    # print set([i for i in hm.neighbors('TGCAT', 2)])
+    # print len(set([i for i in hm.neighbors('TGCAT', 2)]))
     #print hm.freq_words_w_mismatches_and_reverse_comp('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
-    #print hm.freq_words_w_mismatches('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
-    #print len(hm.approx_pattern_matching('AAAAA', 'AACAAGCTGATAAACATTTAAAGAG', 2))
+    # print hm.freq_words_w_mismatches('ACGTTGCATGTCGCATGATGCATGAGAGCT', 4, 1)
+    # print len(hm.approx_pattern_matching('CCC', 'CATGCCATTCGCATTGTCCCAGTGA', 2))
     #print hm.approx_pattern_matching('ATTCTGGA', 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT', 3)
-    #print hm.hamming_distance('CGAAT', 'CGGAC')
+    # print hm.hamming_distance('CAGAAAGGAAGGTCCCCATACACCGACGCACCAGTTTA', 'CACGCCGTATGCATAAACGAGCCGCACGAACCAGAGAG')
     #print hm.min_skew('TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT')
-    #print hm.skew_genome('CATGGGCATCGGCCATACGCC')
+    # print hm.skew_genome('GCATACACTTCCCAGTAGGTACTG')
     #print hm.pattern_to_number2('ATGCAA')
     #print hm.computing_frequencies('ACGCGGCTCTGAAA', 2)
     #print hm.number_to_pattern(5437, 7)
