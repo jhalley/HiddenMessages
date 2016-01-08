@@ -24,6 +24,20 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def median_string(self, dna, k):
+        distance = 9999999999
+        median = ''
+
+        for pattern in itertools.product('ACTG', repeat=k):
+            pattern = ''.join(pattern)
+            d_pattern_dna = sum([min([self.hamming_distance(pattern, dna_i[j:j+k]) for j in range(len(dna_i) - k + 1)]) for dna_i in dna])
+
+            if distance > d_pattern_dna:
+                distance = d_pattern_dna
+                median = pattern
+
+        return median
+
     def motif_enumeration(self, dna_set, k, d):
         patterns = set()
         raw_patterns = set()
@@ -339,6 +353,7 @@ if __name__ == "__main__":
     parser.add_argument('--freq_words_w_mismatches', help='Find the most frequent k-mers with mismatches in a string')
     parser.add_argument('--freq_words_w_mismatches_and_reverse_comp', help='Find the most frequent k-mers (with mismatches and reverse complements) in a string')
     parser.add_argument('--motif_enumeration', help='A brute force attempt at motif finding')
+    parser.add_argument('--median_string', help='Find a median string')
     args = parser.parse_args()
 
      
@@ -421,8 +436,13 @@ if __name__ == "__main__":
         with open(args.motif_enumeration) as f:
             lines = f.readlines()
         print ' '.join(sorted(hm.motif_enumeration([dna.strip() for dna in lines[1:]], int(lines[0].split()[0]), int(lines[0].split()[1]))))
+    elif args.median_string:
+        with open(args.median_string) as f:
+            lines = f.readlines()
+        print hm.median_string([dna.strip() for dna in lines[1:]], int(lines[0].strip()))
 
     # Test calls
+    #print hm.median_string(['AAATTGACGCAT', 'GACGACCACGTT', 'CGTCAGCGCCTG', 'GCTGAGCACCGG', 'AGTTCGGGACAG'], 3)
     #print sorted(hm.motif_enumeration(['ATTTGGC', 'TGCCTTA', 'CGGTATC', 'GAAAATT'], 3, 1))
     # print set([i for i in hm.neighbors('TGCAT', 2)])
     # print len(set([i for i in hm.neighbors('TGCAT', 2)]))
