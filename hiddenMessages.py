@@ -24,6 +24,26 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def profile_most_probable_kmer(self, dna, k, pA, pC, pG, pT):
+        profiles = {
+            'A': pA,
+            'C': pC,
+            'G': pG,
+            'T': pT
+        }
+        highest_prob = 0
+        highest_prob_kmer = ''
+
+        for i in xrange(len(dna) - k + 1):
+            current_kmer = dna[i:i+k]
+            current_kmer_prob = reduce(lambda a, b: a*b, [profiles[current_kmer[nuc_i]][nuc_i] for nuc_i in xrange(len(current_kmer))])
+
+            if current_kmer_prob > highest_prob:
+                highest_prob = current_kmer_prob
+                highest_prob_kmer = current_kmer
+
+        return highest_prob_kmer
+
     def median_string(self, dna, k):
         distance = 9999999999
         median = ''
@@ -354,6 +374,7 @@ if __name__ == "__main__":
     parser.add_argument('--freq_words_w_mismatches_and_reverse_comp', help='Find the most frequent k-mers (with mismatches and reverse complements) in a string')
     parser.add_argument('--motif_enumeration', help='A brute force attempt at motif finding')
     parser.add_argument('--median_string', help='Find a median string')
+    parser.add_argument('--profile_most_probable_kmer', help='Find a Profile-most probable k-mer in a string')
     args = parser.parse_args()
 
      
@@ -440,8 +461,13 @@ if __name__ == "__main__":
         with open(args.median_string) as f:
             lines = f.readlines()
         print hm.median_string([dna.strip() for dna in lines[1:]], int(lines[0].strip()))
+    elif args.profile_most_probable_kmer:
+        with open(args.profile_most_probable_kmer) as f:
+            lines = f.readlines()
+        print hm.profile_most_probable_kmer(lines[0].strip(), int(lines[1].strip()), [float(i) for i in lines[2].strip().split()], [float(i) for i in lines[3].strip().split()], [float(i) for i in lines[4].strip().split()], [float(i) for i in lines[5].strip().split()])
 
     # Test calls
+    #print hm.profile_most_probable_kmer('ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT', 5, [0.2, 0.2, 0.3, 0.2, 0.3], [0.4, 0.3, 0.1, 0.5, 0.1], [0.3, 0.3, 0.5, 0.2, 0.4], [0.1, 0.2, 0.1, 0.1, 0.2])
     #print hm.median_string(['AAATTGACGCAT', 'GACGACCACGTT', 'CGTCAGCGCCTG', 'GCTGAGCACCGG', 'AGTTCGGGACAG'], 3)
     #print sorted(hm.motif_enumeration(['ATTTGGC', 'TGCCTTA', 'CGGTATC', 'GAAAATT'], 3, 1))
     # print set([i for i in hm.neighbors('TGCAT', 2)])
