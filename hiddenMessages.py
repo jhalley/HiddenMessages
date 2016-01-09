@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import argparse
 import itertools
+from collections import Counter
 
 class HiddenMessages:
     def __init__(self):
@@ -24,6 +25,47 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def greedy_motif_search(self, dna, k, t):
+        best_motifs = [dnai[:k] for dnai in dna]
+        score_best_motifs = hm.score_motifs(best_motifs)
+
+        for i in xrange(len(dna[0]) - k + 1):
+            motif = []
+            motif.append(dna[0][i:i+k])
+            for j in xrange(1, t):
+                profiles = hm.create_profile(motif)
+                motifj = hm.profile_most_probable_kmer(dna[j], k, profiles['A'], profiles['C'], profiles['G'], profiles['T'])
+                motif.append(motifj)
+
+            motifs = motif
+
+            if hm.score_motifs(motifs) < score_best_motifs:
+                best_motifs = motifs
+                score_best_motifs = hm.score_motifs(motifs)
+
+        return best_motifs
+
+    def create_profile(self, motifs):
+        k = len(motifs[0])
+        profile = {
+            'A': [0]*k,
+            'C': [0]*k,
+            'G': [0]*k,
+            'T': [0]*k,
+        }
+
+        for nuc in profile:
+            for i in xrange(k):
+                profile[nuc][i] = sum([1 if motif[i] == nuc else 0 for motif in motifs])*1.0/len(motifs)
+
+        return profile
+
+    def score_motifs(self, motifs):
+        transposed = [''.join([motif[i] for motif in motifs]) for i in xrange(len(motifs[0]))]
+
+        return sum([len(i) - Counter(i).most_common(1)[0][1] for i in transposed])
+
+
     def profile_most_probable_kmer(self, dna, k, pA, pC, pG, pT):
         profiles = {
             'A': pA,
@@ -31,7 +73,7 @@ class HiddenMessages:
             'G': pG,
             'T': pT
         }
-        highest_prob = 0
+        highest_prob = -1 
         highest_prob_kmer = ''
 
         for i in xrange(len(dna) - k + 1):
@@ -375,6 +417,7 @@ if __name__ == "__main__":
     parser.add_argument('--motif_enumeration', help='A brute force attempt at motif finding')
     parser.add_argument('--median_string', help='Find a median string')
     parser.add_argument('--profile_most_probable_kmer', help='Find a Profile-most probable k-mer in a string')
+    parser.add_argument('--greedy_motif_search', help='Greedy motif search')
     args = parser.parse_args()
 
      
@@ -465,8 +508,13 @@ if __name__ == "__main__":
         with open(args.profile_most_probable_kmer) as f:
             lines = f.readlines()
         print hm.profile_most_probable_kmer(lines[0].strip(), int(lines[1].strip()), [float(i) for i in lines[2].strip().split()], [float(i) for i in lines[3].strip().split()], [float(i) for i in lines[4].strip().split()], [float(i) for i in lines[5].strip().split()])
+    elif args.greedy_motif_search:
+        with open(args.greedy_motif_search) as f:
+            lines = f.readlines()
+        print '\n'.join(hm.greedy_motif_search([dna.strip() for dna in lines[1:]], int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1])))
 
     # Test calls
+    #print '\n'.join(hm.greedy_motif_search(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
     #print hm.profile_most_probable_kmer('ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT', 5, [0.2, 0.2, 0.3, 0.2, 0.3], [0.4, 0.3, 0.1, 0.5, 0.1], [0.3, 0.3, 0.5, 0.2, 0.4], [0.1, 0.2, 0.1, 0.1, 0.2])
     #print hm.median_string(['AAATTGACGCAT', 'GACGACCACGTT', 'CGTCAGCGCCTG', 'GCTGAGCACCGG', 'AGTTCGGGACAG'], 3)
     #print sorted(hm.motif_enumeration(['ATTTGGC', 'TGCCTTA', 'CGGTATC', 'GAAAATT'], 3, 1))
