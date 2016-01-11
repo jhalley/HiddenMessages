@@ -121,6 +121,22 @@ class HiddenMessages:
 
         return highest_prob_kmer
 
+    def all_median_strings(self, dna, k):
+        distance = 9999999999
+        median = []
+
+        for pattern in itertools.product('ACTG', repeat=k):
+            pattern = ''.join(pattern)
+            d_pattern_dna = sum([min([self.hamming_distance(pattern, dna_i[j:j+k]) for j in range(len(dna_i) - k + 1)]) for dna_i in dna])
+
+            if distance == d_pattern_dna:
+                median.append(pattern)
+            elif distance > d_pattern_dna:
+                distance = d_pattern_dna
+                median = [pattern]
+
+        return median
+
     def median_string(self, dna, k):
         distance = 9999999999
         median = ''
@@ -554,6 +570,7 @@ if __name__ == "__main__":
         print '\n'.join(hm.greedy_motif_search_w_pseudocounts([dna.strip() for dna in lines[1:]], int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1])))
 
     # Test calls
+    print hm.all_median_strings(['CTCGATGAGTAGGAAAGTAGTTTCACTGGGCGAACCACCCCGGCGCTAATCCTAGTGCCC', 'GCAATCCTACCCGAGGCCACATATCAGTAGGAACTAGAACCACCACGGGTGGCTAGTTTC', 'GGTGTTGAACCACGGGGTTAGTTTCATCTATTGTAGGAATCGGCTTCAAATCCTACACAG'], 7)
     # print '\n'.join(hm.greedy_motif_search_w_pseudocounts(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
     #print '\n'.join(hm.greedy_motif_search(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
     #print hm.profile_most_probable_kmer('ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT', 5, [0.2, 0.2, 0.3, 0.2, 0.3], [0.4, 0.3, 0.1, 0.5, 0.1], [0.3, 0.3, 0.5, 0.2, 0.4], [0.1, 0.2, 0.1, 0.1, 0.2])
