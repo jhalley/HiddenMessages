@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import argparse
 import itertools
+import random
 from collections import Counter
 
 class HiddenMessages:
@@ -24,6 +25,34 @@ class HiddenMessages:
             '2': 'G',
             '3': 'T'
         }
+
+    def randomized_motif_search(self, k , t, dna):
+        def inner(k, t, dna):
+            motifs = []
+            for dnai in dna:
+                i = random.randint(0, len(dnai) - k)
+                motifs.append(dnai[i:i+k])
+
+            while True:
+                profiles = hm.create_laplace_rule_profile(motifs)
+                motif_prime = [hm.profile_most_probable_kmer(dnai, k, profiles['A'], profiles['C'], profiles['G'], profiles['T']) for dnai in dna]
+
+                if hm.score_motifs(motif_prime) < hm.score_motifs(motifs):
+                    motifs = motif_prime
+                else:
+                    return motifs
+
+        best_motifs = []
+        for i in xrange(1000):
+            # best_motifs = inner(k, t, dna)
+            if not best_motifs:
+                best_motifs = inner(k, t, dna)
+            else:
+                temp_motifs = inner(k, t, dna)
+                if hm.score_motifs(temp_motifs) < hm.score_motifs(best_motifs):
+                    best_motifs = temp_motifs
+
+        return best_motifs
 
     def greedy_motif_search_w_pseudocounts(self, dna, k, t):
         best_motifs = [dnai[:k] for dnai in dna]
@@ -470,6 +499,7 @@ if __name__ == "__main__":
     parser.add_argument('--profile_most_probable_kmer', help='Find a Profile-most probable k-mer in a string')
     parser.add_argument('--greedy_motif_search', help='Greedy motif search')
     parser.add_argument('--greedy_motif_search_w_pseudocounts', help='Greedy motif search with pseudocounts')
+    parser.add_argument('--randomized_motif_search', help='Randomized motif search')
     args = parser.parse_args()
 
      
@@ -568,9 +598,14 @@ if __name__ == "__main__":
         with open(args.greedy_motif_search_w_pseudocounts) as f:
             lines = f.readlines()
         print '\n'.join(hm.greedy_motif_search_w_pseudocounts([dna.strip() for dna in lines[1:]], int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1])))
+    elif args.randomized_motif_search:
+        with open(args.randomized_motif_search) as f:
+            lines = f.readlines()
+        print '\n'.join(hm.randomized_motif_search(int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1]), [dna.strip() for dna in lines[1:]]))
 
     # Test calls
-    print hm.all_median_strings(['CTCGATGAGTAGGAAAGTAGTTTCACTGGGCGAACCACCCCGGCGCTAATCCTAGTGCCC', 'GCAATCCTACCCGAGGCCACATATCAGTAGGAACTAGAACCACCACGGGTGGCTAGTTTC', 'GGTGTTGAACCACGGGGTTAGTTTCATCTATTGTAGGAATCGGCTTCAAATCCTACACAG'], 7)
+    # print hm.randomized_motif_search(8, 5, ['CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA'])
+    # print hm.all_median_strings(['CTCGATGAGTAGGAAAGTAGTTTCACTGGGCGAACCACCCCGGCGCTAATCCTAGTGCCC', 'GCAATCCTACCCGAGGCCACATATCAGTAGGAACTAGAACCACCACGGGTGGCTAGTTTC', 'GGTGTTGAACCACGGGGTTAGTTTCATCTATTGTAGGAATCGGCTTCAAATCCTACACAG'], 7)
     # print '\n'.join(hm.greedy_motif_search_w_pseudocounts(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
     #print '\n'.join(hm.greedy_motif_search(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
     #print hm.profile_most_probable_kmer('ACCTGTTTATTGCCTAAGTTCCGAACAAACCCAATATAGCCCGAGGGCCT', 5, [0.2, 0.2, 0.3, 0.2, 0.3], [0.4, 0.3, 0.1, 0.5, 0.1], [0.3, 0.3, 0.5, 0.2, 0.4], [0.1, 0.2, 0.1, 0.1, 0.2])
