@@ -615,7 +615,7 @@ if __name__ == "__main__":
         print '\n'.join(hm.randomized_motif_search(int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1]), [dna.strip() for dna in lines[1:]]))
 
     # Test calls
-    print hm.random_biased_die([0.1, 0.2, 0.3])
+    print Counter([hm.random_biased_die([0.1, 0.2, 0.3]) for i in xrange(10000)])
     # print hm.randomized_motif_search(8, 5, ['CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA'])
     # print hm.all_median_strings(['CTCGATGAGTAGGAAAGTAGTTTCACTGGGCGAACCACCCCGGCGCTAATCCTAGTGCCC', 'GCAATCCTACCCGAGGCCACATATCAGTAGGAACTAGAACCACCACGGGTGGCTAGTTTC', 'GGTGTTGAACCACGGGGTTAGTTTCATCTATTGTAGGAATCGGCTTCAAATCCTACACAG'], 7)
     # print '\n'.join(hm.greedy_motif_search_w_pseudocounts(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
