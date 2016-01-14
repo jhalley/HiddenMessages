@@ -26,6 +26,17 @@ class HiddenMessages:
             '3': 'T'
         }
 
+    def random_biased_die(self, prob_dist):
+        prob_dist_to_one = [i/sum(prob_dist) for i in prob_dist]
+        cumulative_prob_dist_to_one = [sum(prob_dist_to_one[:i+1]) for i in range(len(prob_dist_to_one))]
+
+        num = random.random()
+        for i in xrange(len(prob_dist)):
+            if num < cumulative_prob_dist_to_one[i]:
+                return i + 1
+
+        return len(prob_dist) + 1
+
     def randomized_motif_search(self, k , t, dna):
         def inner(k, t, dna):
             motifs = []
@@ -604,6 +615,7 @@ if __name__ == "__main__":
         print '\n'.join(hm.randomized_motif_search(int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1]), [dna.strip() for dna in lines[1:]]))
 
     # Test calls
+    print hm.random_biased_die([0.1, 0.2, 0.3])
     # print hm.randomized_motif_search(8, 5, ['CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA'])
     # print hm.all_median_strings(['CTCGATGAGTAGGAAAGTAGTTTCACTGGGCGAACCACCCCGGCGCTAATCCTAGTGCCC', 'GCAATCCTACCCGAGGCCACATATCAGTAGGAACTAGAACCACCACGGGTGGCTAGTTTC', 'GGTGTTGAACCACGGGGTTAGTTTCATCTATTGTAGGAATCGGCTTCAAATCCTACACAG'], 7)
     # print '\n'.join(hm.greedy_motif_search_w_pseudocounts(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
