@@ -2,6 +2,7 @@
 import argparse
 import itertools
 import random
+import copy
 from collections import Counter
 
 class HiddenMessages:
@@ -25,6 +26,35 @@ class HiddenMessages:
             '2': 'G',
             '3': 'T'
         }
+
+    def gibbs_sampler(self, k, t, N, dna):
+        motifs = []
+        for dnai in dna:
+            i = random.randint(0, len(dnai) - k)
+            motifs.append(dnai[i:i+k])
+
+        best_motifs = copy.deepcopy(motifs) # Deep copy
+        for n in xrange(N):
+            i = random.randint(0, len(motifs) - 1)
+            profiles = hm.create_laplace_rule_profile([motifs[j] for j in xrange(len(motifs)) if j != i])
+            # print [motifs[j] for j in xrange(len(motifs)) if j != i]
+            # print profiles
+
+            # Calculate probabilty of all k-mers in dnai
+            all_kmers_in_dnai = [dna[i][a:a+k] for a in xrange(len(dna[i]) - k + 1)]
+            prob_dist = [reduce(lambda x,y:x*y, [profiles[kmer[nuci]][nuci] for nuci in xrange(len(kmer))]) for kmer in all_kmers_in_dnai]
+            # print prob_dist
+            new_motif_i = hm.random_biased_die(prob_dist)
+            motifs[i] = all_kmers_in_dnai[new_motif_i - 1]  # Because random biased die always starts at 1
+
+            # print best_motifs
+            # print motifs
+            # print 'old: %s new: %s'%(hm.score_motifs(best_motifs), hm.score_motifs(motifs))
+            if hm.score_motifs(motifs) < hm.score_motifs(best_motifs):
+                best_motifs = copy.deepcopy(motifs) # Deep copy
+
+        print hm.score_motifs(best_motifs)
+        return best_motifs
 
     def random_biased_die(self, prob_dist):
         prob_dist_to_one = [i/sum(prob_dist) for i in prob_dist]
@@ -63,6 +93,7 @@ class HiddenMessages:
                 if hm.score_motifs(temp_motifs) < hm.score_motifs(best_motifs):
                     best_motifs = temp_motifs
 
+        print hm.score_motifs(best_motifs)
         return best_motifs
 
     def greedy_motif_search_w_pseudocounts(self, dna, k, t):
@@ -96,7 +127,8 @@ class HiddenMessages:
 
         for nuc in profile:
             for i in xrange(k):
-                profile[nuc][i] = sum([2 if motif[i] == nuc else 1 for motif in motifs])*1.0/len(motifs)
+                # profile[nuc][i] = sum([2 if motif[i] == nuc else 1 for motif in motifs])*1.0/len(motifs)
+                profile[nuc][i] = (sum([1 if motif[i] == nuc else 0 for motif in motifs])+1)*1.0/len(motifs)
 
         return profile
 
@@ -511,6 +543,7 @@ if __name__ == "__main__":
     parser.add_argument('--greedy_motif_search', help='Greedy motif search')
     parser.add_argument('--greedy_motif_search_w_pseudocounts', help='Greedy motif search with pseudocounts')
     parser.add_argument('--randomized_motif_search', help='Randomized motif search')
+    parser.add_argument('--gibbs_sampler', help='Gibbs sampler')
     args = parser.parse_args()
 
      
@@ -613,10 +646,16 @@ if __name__ == "__main__":
         with open(args.randomized_motif_search) as f:
             lines = f.readlines()
         print '\n'.join(hm.randomized_motif_search(int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1]), [dna.strip() for dna in lines[1:]]))
+    elif args.gibbs_sampler:
+        with open(args.gibbs_sampler) as f:
+            lines = f.readlines()
+        print '\n'.join(hm.gibbs_sampler(int(lines[0].strip().split()[0]), int(lines[0].strip().split()[1]), int(lines[0].strip().split()[2]), [dna.strip() for dna in lines[1:]]))
 
     # Test calls
-    print Counter([hm.random_biased_die([0.1, 0.2, 0.3]) for i in xrange(10000)])
-    # print hm.randomized_motif_search(8, 5, ['CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA'])
+    # print hm.score_motifs(['TCTCGGGG', 'CCAAGGTG', 'TACAGGCG', 'TTCAGGTG', 'TCCACGTG'])
+    #print '\n'.join(hm.gibbs_sampler(8, 5, 1000, ['CGCCCCTCTCGGGGGTGTTCAGTAACCGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA']))
+    #print Counter([hm.random_biased_die([0.1, 0.2, 0.3]) for i in xrange(10000)])
+    #print hm.randomized_motif_search(8, 5, ['CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA'])
     # print hm.all_median_strings(['CTCGATGAGTAGGAAAGTAGTTTCACTGGGCGAACCACCCCGGCGCTAATCCTAGTGCCC', 'GCAATCCTACCCGAGGCCACATATCAGTAGGAACTAGAACCACCACGGGTGGCTAGTTTC', 'GGTGTTGAACCACGGGGTTAGTTTCATCTATTGTAGGAATCGGCTTCAAATCCTACACAG'], 7)
     # print '\n'.join(hm.greedy_motif_search_w_pseudocounts(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
     #print '\n'.join(hm.greedy_motif_search(['GGCGTTCAGGCA', 'AAGAATCAGTCA', 'CAAGGAGTTCGC', 'CACGTCAATCAC', 'CAATAATATTCG'], 3, 5))
