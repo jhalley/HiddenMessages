@@ -28,30 +28,37 @@ class HiddenMessages:
         }
 
     def gibbs_sampler(self, k, t, N, dna):
-        motifs = []
-        for dnai in dna:
-            i = random.randint(0, len(dnai) - k)
-            motifs.append(dnai[i:i+k])
+        # This is a modified gibbs sampler where we run the gibbs sampler multiple times to try and get the global best score
+        def inner(k, t, N, dna):
+            motifs = []
+            for dnai in dna:
+                i = random.randint(0, len(dnai) - k)
+                motifs.append(dnai[i:i+k])
 
-        best_motifs = copy.deepcopy(motifs) # Deep copy
-        for n in xrange(N):
-            i = random.randint(0, len(motifs) - 1)
-            profiles = hm.create_laplace_rule_profile([motifs[j] for j in xrange(len(motifs)) if j != i])
-            # print [motifs[j] for j in xrange(len(motifs)) if j != i]
-            # print profiles
+            local_best_motifs = copy.deepcopy(motifs) # Deep copy
+            for n in xrange(N):
+                i = random.randint(0, len(motifs) - 1)
+                profiles = hm.create_laplace_rule_profile([motifs[j] for j in xrange(len(motifs)) if j != i])
 
-            # Calculate probabilty of all k-mers in dnai
-            all_kmers_in_dnai = [dna[i][a:a+k] for a in xrange(len(dna[i]) - k + 1)]
-            prob_dist = [reduce(lambda x,y:x*y, [profiles[kmer[nuci]][nuci] for nuci in xrange(len(kmer))]) for kmer in all_kmers_in_dnai]
-            # print prob_dist
-            new_motif_i = hm.random_biased_die(prob_dist)
-            motifs[i] = all_kmers_in_dnai[new_motif_i - 1]  # Because random biased die always starts at 1
+                # Calculate probabilty of all k-mers in dnai
+                all_kmers_in_dnai = [dna[i][a:a+k] for a in xrange(len(dna[i]) - k + 1)]
+                prob_dist = [reduce(lambda x,y:x*y, [profiles[kmer[nuci]][nuci] for nuci in xrange(len(kmer))]) for kmer in all_kmers_in_dnai]
+                new_motif_i = hm.random_biased_die(prob_dist)
+                motifs[i] = all_kmers_in_dnai[new_motif_i - 1]  # Because random biased die always starts at 1
 
-            # print best_motifs
-            # print motifs
-            # print 'old: %s new: %s'%(hm.score_motifs(best_motifs), hm.score_motifs(motifs))
-            if hm.score_motifs(motifs) < hm.score_motifs(best_motifs):
-                best_motifs = copy.deepcopy(motifs) # Deep copy
+                if hm.score_motifs(motifs) < hm.score_motifs(local_best_motifs):
+                    local_best_motifs = copy.deepcopy(motifs) # Deep copy
+
+            return local_best_motifs
+
+        best_motifs = []
+        for i in xrange(1): # Change this number to run gibbs_sampler multiple times to try to get the global best score
+            if not best_motifs:
+                best_motifs = inner(k, t, N, dna)
+            else:
+                temp_motifs = inner(k, t, N, dna)
+                if hm.score_motifs(temp_motifs) < hm.score_motifs(best_motifs):
+                    best_motifs = copy.deepcopy(temp_motifs)
 
         print hm.score_motifs(best_motifs)
         return best_motifs
@@ -653,7 +660,7 @@ if __name__ == "__main__":
 
     # Test calls
     # print hm.score_motifs(['TCTCGGGG', 'CCAAGGTG', 'TACAGGCG', 'TTCAGGTG', 'TCCACGTG'])
-    #print '\n'.join(hm.gibbs_sampler(8, 5, 1000, ['CGCCCCTCTCGGGGGTGTTCAGTAACCGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA']))
+    print '\n'.join(hm.gibbs_sampler(8, 5, 100, ['CGCCCCTCTCGGGGGTGTTCAGTAACCGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA']))
     #print Counter([hm.random_biased_die([0.1, 0.2, 0.3]) for i in xrange(10000)])
     #print hm.randomized_motif_search(8, 5, ['CGCCCCTCTCGGGGGTGTTCAGTAAACGGCCA', 'GGGCGAGGTATGTGTAAGTGCCAAGGTGCCAG', 'TAGTACCGAGACCGAAAGAAGTATACAGGCGT', 'TAGATCAAGTTTCAGGTGCACGTCGGTGAACC', 'AATCCACCAGCTCCACGTGCAATGTTGGCCTA'])
     # print hm.all_median_strings(['CTCGATGAGTAGGAAAGTAGTTTCACTGGGCGAACCACCCCGGCGCTAATCCTAGTGCCC', 'GCAATCCTACCCGAGGCCACATATCAGTAGGAACTAGAACCACCACGGGTGGCTAGTTTC', 'GGTGTTGAACCACGGGGTTAGTTTCATCTATTGTAGGAATCGGCTTCAAATCCTACACAG'], 7)
